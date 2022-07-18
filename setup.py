@@ -7,6 +7,7 @@ setup(
     author="Jakub Beránek",
     author_email="berykubik@gmail.com",
     url="https://github.com/kobzol/mkdocs-nedoc-plugin",
+    install_requires=["nedoc==0.10", "mkdocs>=1.2,<2"],
     packages=["mkdocs_nedoc_plugin"],
     entry_points={
         'mkdocs.plugins': [

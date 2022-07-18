@@ -12,7 +12,7 @@ This is a [MkDocs](https://www.mkdocs.org/) plugin for linking to API documentat
 
     Add `create_map_json = True` to `nedoc.conf`. This will create a `map.json` file with links that
     will be used by this plugin.
- 
+
 3) Link to code in `mkdocs` documentation.
     ```
     The [`Box`](elsie.box.Box) class is awesome.

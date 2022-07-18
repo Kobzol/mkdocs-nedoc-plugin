@@ -9,21 +9,36 @@ Links cannot span a line! Keep them on a single line.
 Example:
 The [`Box`](elsie.box.Box) class is awesome.
 """
-import os
-from os.path import abspath, dirname
-import re
 import json
+import os
+import re
+from pathlib import Path
 
 from mkdocs.plugins import BasePlugin
-from mkdocs.structure.pages import Page
+from nedoc import config, core
 
 LINK_REGEX = re.compile(r"\[`.*?`\]\((.*?)\)")
+
+
+def build_nedoc(conf_path: Path):
+    conf = config.parse_config(str(conf_path))
+    c = core.Core(conf)
+    c.build()
 
 
 class NedocPlugin(BasePlugin):
     def __init__(self):
         self.site_url = None
         self.url_map = {}
+
+    def on_pre_build(self, config, **kwargs):
+        docs_dir = Path(config["docs_dir"])
+        root_dir = docs_dir.parent
+        conf_file = root_dir / "nedoc.conf"
+        if not conf_file.exists():
+            raise Exception(f"nedoc configuration file {conf_file} does not exist. Run `nedoc "
+                            "init`.")
+        build_nedoc(conf_file)
 
     def on_config(self, config, **kwargs):
         self.site_url = config.get("site_url") or "/"
