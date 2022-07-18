@@ -20,3 +20,4 @@ This is a [MkDocs](https://www.mkdocs.org/) plugin for linking to API documentat
 
 ## Caveats
 - Links cannot span a line! Keep them on a single line.
+- Links that start with # will not be considered.
