@@ -18,17 +18,27 @@ import re
 from pathlib import Path
 
 import mkdocs
+import nedoc.config
 from mkdocs.plugins import BasePlugin
 from nedoc import config, core
 
 LINK_REGEX = re.compile(r"\[`.*?`\]\(((?!#).*?)\)")
 
 
-def build_nedoc(conf_path: Path, target_dir: Path):
-    conf = config.parse_config(str(conf_path))
-    conf.target_path = str(target_dir)
+def load_nedoc_config(config) -> nedoc.config.Config:
+    docs_dir = Path(config["docs_dir"])
+    root_dir = docs_dir.parent
+    conf_file = root_dir / "nedoc.conf"
+    if not conf_file.exists():
+        raise Exception(f"nedoc configuration file {conf_file} does not exist. Run `nedoc "
+                        "init`.")
+    return nedoc.config.parse_config(str(conf_file))
 
-    c = core.Core(conf)
+
+def build_nedoc(config: nedoc.config.Config, target_dir: Path):
+    config.target_path = str(target_dir)
+
+    c = core.Core(config)
     c.build()
 
 
@@ -61,18 +71,13 @@ class NedocPlugin(BasePlugin):
 
     def on_files(self, files, config, **kwargs):
         # Build API documentation
-        docs_dir = Path(config["docs_dir"])
-        root_dir = docs_dir.parent
-        conf_file = root_dir / "nedoc.conf"
-        if not conf_file.exists():
-            raise Exception(f"nedoc configuration file {conf_file} does not exist. Run `nedoc "
-                            "init`.")
+        nedoc_config = load_nedoc_config(config)
 
         build_dir = Path(config["site_dir"])
         target_dir = build_dir / self.doc_path
 
         os.makedirs(target_dir, exist_ok=True)
-        build_nedoc(conf_file, target_dir)
+        build_nedoc(nedoc_config, target_dir)
 
         print(f"Generated API documentation into {target_dir}")
 
@@ -106,3 +111,8 @@ class NedocPlugin(BasePlugin):
 
     def on_post_build(self, config, **kwargs):
         print(f"Found {self.api_links} API links")
+
+    def on_serve(self, server, config, builder, **kwargs):
+        nedoc_config = load_nedoc_config(config)
+        server.watch(nedoc_config.source_path, builder)
+        return server
