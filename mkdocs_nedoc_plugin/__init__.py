@@ -48,7 +48,6 @@ class NedocPlugin(BasePlugin):
     links into the API documentation from Markdown.
     """
     config_scheme = (
-        ("url", mkdocs.config.config_options.Type(str, default="apidoc")),
         ("path", mkdocs.config.config_options.Type(str, default="apidoc")),
     )
 
@@ -56,18 +55,16 @@ class NedocPlugin(BasePlugin):
         self.site_url = None
         self.url_map = {}
         self.api_links = 0
-        self.doc_path = "apidoc"
-        self.doc_url = "apidoc"
+        self.doc_path = None
 
     def on_config(self, config, **kwargs):
         # Normalize API site url
         self.doc_path = self.config["path"]
-        self.doc_url = self.config["url"]
 
         self.site_url = config.get("site_url") or "/"
         if self.site_url and self.site_url[-1] != "/":
             self.site_url = f"{self.site_url}/"
-        self.site_url = f"{self.site_url}{self.doc_url}"
+        self.site_url = f"{self.site_url}{self.doc_path}"
 
     def on_files(self, files, config, **kwargs):
         # Build API documentation
@@ -79,7 +76,8 @@ class NedocPlugin(BasePlugin):
         os.makedirs(target_dir, exist_ok=True)
         build_nedoc(nedoc_config, target_dir)
 
-        print(f"Generated API documentation into {target_dir}")
+        print(f"Generated API documentation into {target_dir}, it will be available at "
+              f"{self.site_url}")
 
         # Load URL map
         map_file = target_dir / "map.json"
