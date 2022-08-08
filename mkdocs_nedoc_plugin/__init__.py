@@ -20,9 +20,10 @@ from pathlib import Path
 import mkdocs
 import nedoc.config
 from mkdocs.plugins import BasePlugin
-from nedoc import config, core
+from nedoc import core
 
-LINK_REGEX = re.compile(r"\[`.*?`\]\(((?!#).*?)\)")
+# The second group is used to avoid adding the hash fragment to the link lookup key
+LINK_REGEX = re.compile(r"\[`.*?`]\(((?!#)[^#]*?)(#.*?)?\)")
 
 
 def load_nedoc_config(config) -> nedoc.config.Config:
